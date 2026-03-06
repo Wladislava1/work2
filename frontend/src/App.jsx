@@ -1,24 +1,21 @@
 /* eslint-disable no-unused-vars */
-import { useState, useEffect } from 'react';
+import { useState } from 'react'; // Убрали useEffect
 import { motion } from 'framer-motion';
-import { AlertTriangle, Users } from 'lucide-react'; // Изменил иконку
-import axios from 'axios';
+import { AlertTriangle, Users } from 'lucide-react';
+// import axios from 'axios'; <--- Удалили или закомментировали axios
 import CleanDashboard from './components/CleanDashboard';
 import TeamDashboard from './components/TeamDashboard';
 
+// ИМПОРТИРУЕМ НАШИ ДАННЫЕ ИЗ ФАЙЛА
+import { initialTasks } from './data'; 
+
 function App() {
   const [isRealityMode, setIsRealityMode] = useState(false);
-  const [tasks, setTasks] = useState([]);
-
-  useEffect(() => {
-    axios.get('http://localhost:3001/api/tasks')
-      .then(response => {
-        setTasks(response.data);
-      })
-      .catch(error => {
-        console.error("Ошибка при загрузке задач из базы:", error);
-      });
-  }, []);
+  
+  // Кладем наши импортированные задачи сразу в стейт!
+  // Теперь приложение полностью автономно.
+  // eslint-disable-next-line no-unused-vars
+  const [tasks, setTasks] = useState(initialTasks); 
 
   return (
     <div className={`min-h-screen transition-colors duration-700 ${isRealityMode ? 'bg-slate-900' : 'bg-red-950/20'} text-slate-200 p-8 overflow-x-hidden relative`}>
@@ -41,7 +38,6 @@ function App() {
               : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'
           }`}
         >
-          {/* НОВЫЙ ТЕКСТ КНОПОК */}
           {!isRealityMode ? <Users size={20} /> : <AlertTriangle size={20} />}
           {!isRealityMode ? 'ДЕТАЛИЗАЦИЯ ПО КОМАНДЕ' : 'НАЗАД К ОБЩЕЙ СВОДКЕ'}
         </button>
