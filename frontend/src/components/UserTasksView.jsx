@@ -6,7 +6,7 @@ import { ArrowLeft, CheckCircle, Clock, Plus, X, AlignLeft, Calendar } from 'luc
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Brush } from 'recharts';
 import { normalizeStatus, TaskCard } from './TeamDashboard';
 
-const PROJECTS = ['ССПБ ID', 'СБ Арбитр', 'АУ Публикатор', 'Про Решения', 'Сириус'];
+const PROJECTS = ['ССПБ ID', 'СБ Арбитр', 'АУ Публикатор', 'Про Решения', 'Сириус', 'ССПБ'];
 
 export default function UserTasksView({ user, tasks, activeProject, onBack }) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -19,17 +19,44 @@ export default function UserTasksView({ user, tasks, activeProject, onBack }) {
   const inProgress = tasks.filter(t => normalizeStatus(t.status) === 'inProgress');
   const completed = tasks.filter(t => normalizeStatus(t.status) === 'completed');
 
+  // ================= АНАЛИТИКА В СТИЛЕ JELLYFISH =================
+  // 1. Cycle Time (Только для выполненных задач с датами)
+  const completedWithDates = completed.filter(t => t.start_date && t.end_date);
+  let totalDays = 0;
+  completedWithDates.forEach(t => {
+     const diffDays = Math.ceil(Math.abs(new Date(t.end_date) - new Date(t.start_date)) / (1000 * 60 * 60 * 24));
+     totalDays += diffDays;
+  });
+  const avgCycleTime = completedWithDates.length ? Math.round(totalDays / completedWithDates.length) : null;
+
+  // 2. Нагрузка / Выгорание (Work In Progress Limit)
+  const ALLOCATION_NORM = 3; // Идеально 3 задачи в параллели
+  const currentLoad = inProgress.length;
+  const loadPercent = Math.min(Math.round((currentLoad / ALLOCATION_NORM) * 100), 200); // Ограничиваем шкалу до 200%
+  const isOverloaded = currentLoad > ALLOCATION_NORM;
+
+  // 3. Распределение (Allocation: Баги vs Фичи)
+  const allActive = [...completed, ...inProgress];
+  const bugCount = allActive.filter(t => t.type === 'Баг' || t.title.toLowerCase().includes('баг')).length;
+  const bugPercent = allActive.length ? Math.round((bugCount / allActive.length) * 100) : 0;
+  const featurePercent = 100 - bugPercent;
+
   const generateChartData = () => {
     const data = [];
     const today = new Date();
+    // Точка отсчета: 1 января текущего года
+    const startDate = new Date(today.getFullYear(), 0, 1); 
     
-    for(let i = 14; i >= 0; i--) {
+    // Считаем сколько дней прошло с 1 января до сегодня
+    const diffDays = Math.ceil((today - startDate) / (1000 * 60 * 60 * 24));
+
+    // Идем циклом от 1 января до сегодняшнего дня
+    for(let i = diffDays; i >= 0; i--) {
       const currentDate = new Date(today);
       currentDate.setDate(today.getDate() - i);
       currentDate.setHours(23, 59, 59, 999); 
       
-      let activeCount = 0;
-      let completedCount = 0;
+      let activeCount = 0, completedCount = 0;
 
       tasks.forEach(task => {
         const taskStatus = normalizeStatus(task.status);
@@ -37,28 +64,16 @@ export default function UserTasksView({ user, tasks, activeProject, onBack }) {
         const end = task.end_date ? new Date(task.end_date) : null;
 
         if (taskStatus === 'completed') {
-          if (end && currentDate >= end) {
-            completedCount++; 
-          } else if (start && currentDate >= start && (!end || currentDate < end)) {
-            activeCount++; 
-          } else if (!end && !start) {
-            completedCount++; 
-          }
+          if (end && currentDate >= end) completedCount++; 
+          else if (start && currentDate >= start && (!end || currentDate < end)) activeCount++; 
+          else if (!end && !start) completedCount++; 
         } 
         else if (taskStatus === 'inProgress') {
-           if (start && currentDate >= start) {
-             activeCount++; 
-           } else if (!start) {
-             activeCount++; 
-           }
+           if (start && currentDate >= start) activeCount++; 
+           else if (!start) activeCount++; 
         }
       });
-
-      data.push({ 
-        name: `${currentDate.getDate()} ${currentDate.toLocaleString('ru-RU', { month: 'short' }).replace('.', '')}`, 
-        "В работе": activeCount, 
-        "Выполнено": completedCount 
-      });
+      data.push({ name: `${currentDate.getDate()} ${currentDate.toLocaleString('ru-RU', { month: 'short' }).replace('.', '')}`, "В работе": activeCount, "Выполнено": completedCount });
     }
     return data;
   };
@@ -67,32 +82,63 @@ export default function UserTasksView({ user, tasks, activeProject, onBack }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Отправляем на сервер:", { ...formData, assignee_id: user.id });
     setIsCreateModalOpen(false);
     alert(`Задача "${formData.title}" добавлена!`);
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Не указана';
-    return new Date(dateString).toLocaleDateString('ru-RU', { day: '2-digit', month: 'short', year: 'numeric' });
-  };
+  const formatDate = (dateString) => dateString ? new Date(dateString).toLocaleDateString('ru-RU', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Не указана';
 
   return (
     <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="w-full relative pb-10">
       
+      {/* ШАПКА ПРОФИЛЯ */}
       <div className="flex items-center gap-6 mb-8 border-b border-slate-700 pb-6">
-        <button onClick={onBack} className="p-3 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-300 transition-colors">
-          <ArrowLeft size={24} />
-        </button>
+        <button onClick={onBack} className="p-3 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-300 transition-colors"><ArrowLeft size={24} /></button>
         <div>
           <h2 className="text-3xl font-bold text-white">{user.name}</h2>
           <p className={`text-sm font-bold uppercase tracking-widest mt-1 ${user.color}`}>{user.role} • Проект: {activeProject}</p>
         </div>
-        <button onClick={() => setIsCreateModalOpen(true)} className="ml-auto flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(52,211,153,0.3)]">
-          <Plus size={20} /> ВЗЯТЬ ЗАДАЧУ
-        </button>
       </div>
 
+      {/* JELLYFISH METRICS ROW */}
+      <div className="grid grid-cols-3 gap-6 mb-8">
+        
+        {/* Cycle Time */}
+        <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
+           <h4 className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-2">Скорость выполнения</h4>
+           <div className="flex items-end gap-2">
+             <span className="text-4xl font-black text-white">{avgCycleTime !== null ? avgCycleTime : '-'}</span>
+             <span className="text-slate-500 mb-1">дней</span>
+           </div>
+           <p className="text-xs text-slate-500 mt-2">В среднем от старта до релиза</p>
+        </div>
+
+        {/* Capacity / Burnout (Gauge Bar) */}
+        <div className={`p-6 rounded-2xl border shadow-xl relative overflow-hidden transition-colors ${isOverloaded ? 'bg-red-950/20 border-red-900/50' : 'bg-slate-900/60 border-slate-800'}`}>
+           <h4 className={`text-sm font-bold uppercase tracking-wider mb-2 ${isOverloaded ? 'text-red-400' : 'text-slate-400'}`}>Нагрузка (В параллели: {currentLoad})</h4>
+           <div className="h-4 w-full bg-slate-800 rounded-full mt-4 overflow-hidden relative">
+              <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(loadPercent, 100)}%` }} className={`h-full ${isOverloaded ? 'bg-red-500' : 'bg-emerald-500'}`} />
+           </div>
+           <p className={`text-xs mt-3 font-bold ${isOverloaded ? 'text-red-400' : 'text-slate-500'}`}>
+             {isOverloaded ? `ВНИМАНИЕ: Перегруз (${loadPercent}%)` : `Норма (до ${ALLOCATION_NORM} задач)`}
+           </p>
+        </div>
+
+        {/* Allocation Bar */}
+        <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
+           <h4 className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-2">Распределение (Allocation)</h4>
+           <div className="flex justify-between items-end mb-2">
+              <span className="text-2xl font-black text-indigo-400">{featurePercent}% <span className="text-xs text-slate-500 font-normal">Задачи</span></span>
+              <span className="text-2xl font-black text-rose-500">{bugPercent}% <span className="text-xs text-slate-500 font-normal">Баги</span></span>
+           </div>
+           <div className="h-2 w-full bg-slate-800 rounded-full flex overflow-hidden">
+              <motion.div initial={{ width: 0 }} animate={{ width: `${featurePercent}%` }} className="bg-indigo-500 h-full" />
+              <motion.div initial={{ width: 0 }} animate={{ width: `${bugPercent}%` }} className="bg-rose-500 h-full" />
+           </div>
+        </div>
+      </div>
+
+      {/* СТАРЫЙ ГРАФИК ПРОДУКТИВНОСТИ */}
       <div className="mb-10 bg-slate-800/40 p-6 rounded-2xl border border-slate-700">
         <h3 className="text-lg font-bold text-slate-300 mb-6">График продуктивности</h3>
         <div className="h-72 w-full">
@@ -104,37 +150,29 @@ export default function UserTasksView({ user, tasks, activeProject, onBack }) {
               <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', borderRadius: '8px', color: '#fff' }} />
               <Line type="monotone" dataKey="В работе" stroke="#fbbf24" strokeWidth={3} dot={{ r: 4 }} />
               <Line type="monotone" dataKey="Выполнено" stroke="#34d399" strokeWidth={3} dot={{ r: 4 }} />
-              <Brush dataKey="name" height={30} stroke="#0891b2" fill="#1e293b" tickFormatter={() => ''} startIndex={5} endIndex={14} />
+              <Brush dataKey="name" height={30} stroke="#6366f1" fill="#0f172a" tickFormatter={() => ''} startIndex={Math.max(0, activityData.length - 15)} />
             </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* ========================================== */}
-      {/* КОЛОНКИ С ВНУТРЕННИМ СКРОЛЛОМ (max-h)      */}
-      {/* ========================================== */}
+      {/* КОЛОНКИ С ЗАДАЧАМИ */}
       <div className="grid grid-cols-2 gap-8 items-start">
         <div className="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 border-t-4 border-t-amber-500 flex flex-col">
-          <h3 className="text-xl font-bold text-amber-400 mb-6 flex items-center gap-2 shrink-0">
-            <Clock size={22} /> В работе ({inProgress.length})
-          </h3>
+          <h3 className="text-xl font-bold text-amber-400 mb-6 flex items-center gap-2 shrink-0"><Clock size={22} /> В работе ({inProgress.length})</h3>
           <div className="max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-            {inProgress.map((task, i) => <TaskCard key={task.id} task={task} showProject={activeProject === 'Все'} delay={i * 0.05} onClick={() => setSelectedTask(task)} />)}
-            {inProgress.length === 0 && <p className="text-slate-500 text-center py-10">Нет активных задач</p>}
+            {inProgress.map((t, i) => <TaskCard key={t.id} task={t} showProject={activeProject === 'Все'} delay={i * 0.05} onClick={() => setSelectedTask(t)} />)}
           </div>
         </div>
-        
         <div className="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 border-t-4 border-t-emerald-500 flex flex-col">
-          <h3 className="text-xl font-bold text-emerald-400 mb-6 flex items-center gap-2 shrink-0">
-            <CheckCircle size={22} /> Выполнена ({completed.length})
-          </h3>
+          <h3 className="text-xl font-bold text-emerald-400 mb-6 flex items-center gap-2 shrink-0"><CheckCircle size={22} /> Выполнена ({completed.length})</h3>
           <div className="max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-            {completed.map((task, i) => <TaskCard key={task.id} task={task} showProject={activeProject === 'Все'} delay={i * 0.05} onClick={() => setSelectedTask(task)} />)}
-            {completed.length === 0 && <p className="text-slate-500 text-center py-10">Пока ничего не готово</p>}
+            {completed.map((t, i) => <TaskCard key={t.id} task={t} showProject={activeProject === 'Все'} delay={i * 0.05} onClick={() => setSelectedTask(t)} />)}
           </div>
         </div>
       </div>
 
+      {/* МОДАЛЬНОЕ ОКНО ПРОСМОТРА ЗАДАЧИ (БЕЗ ИЗМЕНЕНИЙ) */}
       <AnimatePresence>
         {selectedTask && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedTask(null)}>
@@ -171,74 +209,6 @@ export default function UserTasksView({ user, tasks, activeProject, onBack }) {
                   </div>
                 </div>
               </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {isCreateModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-            <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto"
-            >
-              <div className="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
-                <h3 className="text-2xl font-bold text-white">Новая задача: <span className="text-cyan-400">{user.name}</span></h3>
-                <button onClick={() => setIsCreateModalOpen(false)} className="text-slate-400 hover:text-white"><X size={24} /></button>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm text-slate-400 mb-1">Название *</label>
-                  <input required type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-cyan-500" />
-                </div>
-                
-                <div>
-                  <label className="block text-sm text-slate-400 mb-1">Подробное описание</label>
-                  <textarea rows="5" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-cyan-500 whitespace-pre-wrap font-mono text-sm"></textarea>
-                </div>
-                
-                <div>
-                    <label className="block text-sm text-slate-400 mb-1">Проект</label>
-                    <select value={formData.project} onChange={e => setFormData({...formData, project: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white">
-                      {PROJECTS.map(p => <option key={p} value={p}>{p}</option>)}
-                    </select>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm text-slate-400 mb-1">Тип</label>
-                    <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white">
-                      <option value="Задача">Задача</option><option value="Баг">Баг</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm text-slate-400 mb-1">Статус</label>
-                    <select value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white">
-                      <option value="В работе">В работе</option><option value="Выполнена">Выполнена</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm text-slate-400 mb-1">Приоритет</label>
-                    <select value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white">
-                      <option value="Low">Обычная</option><option value="High">Высокий</option><option value="Critical">Критичная</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm text-slate-400 mb-1">Дата взятия в работу</label>
-                    <input type="date" value={formData.start_date} onChange={e => setFormData({...formData, start_date: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white color-scheme-dark" />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-slate-400 mb-1">Дата выполнения</label>
-                    <input type="date" value={formData.end_date} onChange={e => setFormData({...formData, end_date: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white color-scheme-dark" />
-                  </div>
-                </div>
-
-                <button type="submit" className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-4 rounded-xl mt-4 transition-colors">СОЗДАТЬ И ПРИВЯЗАТЬ</button>
-              </form>
             </motion.div>
           </div>
         )}
