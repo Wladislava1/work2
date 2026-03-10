@@ -4,13 +4,14 @@ import { Database, Network, ShieldCheck, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const gapData = [
-  { name: '1 Янв', "Новые требования (Backlog)": 15, "Реализовано (Released)": 8 },
-  { name: '15 Янв', "Новые требования (Backlog)": 38, "Реализовано (Released)": 14 },
-  { name: '1 Фев', "Новые требования (Backlog)": 85, "Реализовано (Released)": 22 },
-  { name: '15 Фев', "Новые требования (Backlog)": 142, "Реализовано (Released)": 31 },
-  { name: '1 Мар', "Новые требования (Backlog)": 210, "Реализовано (Released)": 38 },
-  { name: 'Сегодня', "Новые требования (Backlog)": 275, "Реализовано (Released)": 45 },
+  { name: '1 Янв', "Уже написано": 35, "Реализовано": 12 },
+  { name: '15 Янв', "Уже написано": 64, "Реализовано": 28 },
+  { name: '1 Фев', "Уже написано": 85, "Реализовано": 46 },
+  { name: '15 Фев', "Уже написано": 120, "Реализовано": 63 },
+  { name: '1 Мар', "Уже написано": 153, "Реализовано": 82 },
+  { name: 'Сегодня', "Уже написано": 195, "Реализовано": 100 },
 ];
+
 
 export default function CleanDashboard() {
   return (
@@ -18,9 +19,41 @@ export default function CleanDashboard() {
       
       <div className="grid grid-cols-2 gap-8">
         
-        {/* АУДИТ 1: СБ АРБИТР */}
+        {/* АУДИТ 1: ССПБ ID (ГЛАВНЫЙ ФОКУС) */}
         <motion.div 
           initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}
+          className="bg-slate-800/50 p-8 rounded-3xl border border-slate-700 shadow-xl"
+        >
+          <div className="flex items-center gap-4 mb-6 relative z-10">
+            <div className="p-3 bg-indigo-900/50 text-indigo-400 rounded-xl border border-indigo-800">
+              <Database size={28} />
+            </div>
+            <div>
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Главный приоритет</p>
+              <h2 className="text-2xl font-bold text-white">ССПБ ID</h2>
+            </div>
+          </div>
+          
+          {/* УВЕЛИЧЕННЫЙ ШРИФТ: text-base вместо text-sm */}
+          <ul className="space-y-4 text-slate-300 text-base">
+            <li className="flex gap-3 items-start">
+              <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2.5 shrink-0" />
+              <span><strong>Запуск продаж и интеграции:</strong> Продажи начинаются со дня на день. Сейчас критически важно протестировать стабильность работы, завершить интеграцию всех продуктов и полностью переделать дизайн сервиса.</span>
+            </li>
+            <li className="flex gap-3 items-start">
+              <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2.5 shrink-0" />
+              <span><strong>Проблема с архитектурой:</strong> Выбранная изначально система авторизации (Zitadel) работает нестабильно и постоянно генерирует много багов, которые приходится срочно чинить.</span>
+            </li>
+            <li className="flex gap-3 items-start bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+              <Activity className="text-amber-500 shrink-0 mt-0.5" size={20} />
+              <span><strong>Нехватка разработчиков:</strong> Огромный объем работы тянут на себе всего два человека. Команда работает на пределе возможностей (на проекте только Трофим и Саша Светиков).</span>
+            </li>
+          </ul>
+        </motion.div>
+
+        {/* АУДИТ 2: СБ АРБИТР */}
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}
           className="bg-slate-800/50 p-8 rounded-3xl border border-slate-700 shadow-xl"
         >
           <div className="flex items-center gap-4 mb-6">
@@ -33,45 +66,15 @@ export default function CleanDashboard() {
             </div>
           </div>
           
-          <ul className="space-y-4 text-slate-300 text-sm">
+          {/* УВЕЛИЧЕННЫЙ ШРИФТ: text-base вместо text-sm */}
+          <ul className="space-y-4 text-slate-300 text-base">
             <li className="flex gap-3 items-start">
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0" />
-              <span><strong>Интеграционный слой:</strong> Усложненная бизнес-логика открытия счетов требует постоянного рефакторинга API и адаптации моделей данных.</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2.5 shrink-0" />
+              <span><strong>Интеграция с банком:</strong> Идет реализация большого раздела для открытия счетов. Требуется создать новую роль (сотрудник банка), новые справочники и настроить сложную таблицу связей.</span>
             </li>
             <li className="flex gap-3 items-start">
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0" />
-              <span><strong>Матрица доступов (RBAC):</strong> Внедрение новых ролей (Арбитражные управляющие, ОТР, Физ.лица) требует пересмотра архитектуры авторизации.</span>
-            </li>
-          </ul>
-        </motion.div>
-
-        {/* АУДИТ 2: ССПБ ID */}
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}
-          className="bg-slate-800/50 p-8 rounded-3xl border border-slate-700 shadow-xl"
-        >
-          <div className="flex items-center gap-4 mb-6 relative z-10">
-            <div className="p-3 bg-indigo-900/50 text-indigo-400 rounded-xl border border-indigo-800">
-              <Database size={28} />
-            </div>
-            <div>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Технический аудит</p>
-              <h2 className="text-2xl font-bold text-white">ССПБ ID</h2>
-            </div>
-          </div>
-          
-          <ul className="space-y-4 text-slate-300 text-sm">
-            <li className="flex gap-3 items-start">
-              <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2 shrink-0" />
-              <span><strong>Технический долг архитектуры:</strong> Интеграция Zitadel вместо Keycloak генерирует аномальный объем дефектов в базовых процессах аутентификации.</span>
-            </li>
-            <li className="flex gap-3 items-start">
-              <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2 shrink-0" />
-              <span><strong>Деградация пропускной способности:</strong> Скорость выявления дефектов QA-инженерами кратно превышает Capacity (емкость) команды разработки.</span>
-            </li>
-            <li className="flex gap-3 items-start bg-slate-900/50 p-3 rounded-lg border border-slate-800">
-              <Activity className="text-amber-500 shrink-0 mt-0.5" size={16} />
-              <span><strong>Утилизация ресурсов (100%+):</strong> Проект поддерживается силами двух инженеров (Трофим, А. Светиков), что создает единую точку отказа (SPOF).</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2.5 shrink-0" />
+              <span><strong>Раздел заявок:</strong> С нуля создается интерфейс для работы с заявками на счета. Разрабатываются статусы заявок, переходы между ними и логика обработки ошибок.</span>
             </li>
           </ul>
         </motion.div>
@@ -85,12 +88,12 @@ export default function CleanDashboard() {
       >
         <div className="flex justify-between items-end mb-8">
           <div>
-            <h2 className="text-2xl font-bold mb-2 text-white">Динамика накопления требований (Tech Debt)</h2>
-            <p className="text-slate-400 text-sm">Разрыв между объемом поступающих задач и скоростью их реализации (Velocity).</p>
+            <h2 className="text-2xl font-bold mb-2 text-white">Динамика накопления требований</h2>
+            <p className="text-slate-400 text-sm">Разрыв между объемом поступающих задач и скоростью их реализации</p>
           </div>
           <div className="flex gap-6">
-             <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-rose-500" /><span className="text-sm text-slate-300">Backlog (Требования)</span></div>
-             <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500" /><span className="text-sm text-slate-300">Released (Выполнено)</span></div>
+             <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-rose-500" /><span className="text-sm text-slate-300">Написано</span></div>
+             <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500" /><span className="text-sm text-slate-300">Выполнено</span></div>
           </div>
         </div>
         
@@ -112,8 +115,8 @@ export default function CleanDashboard() {
               <YAxis stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 12 }} />
               <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', color: '#fff' }} />
               
-              <Area type="monotone" dataKey="Реализовано (Released)" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorDone)" />
-              <Area type="monotone" dataKey="Новые требования (Backlog)" stroke="#f43f5e" strokeWidth={3} fillOpacity={1} fill="url(#colorReq)" />
+              <Area type="monotone" dataKey="Реализовано" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorDone)" />
+              <Area type="monotone" dataKey="Уже написано" stroke="#f43f5e" strokeWidth={3} fillOpacity={1} fill="url(#colorReq)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
