@@ -28,11 +28,21 @@ export default function UserTasksView({ user, tasks, activeProject, onBack }) {
      totalDays += diffDays;
   });
   const avgCycleTime = completedWithDates.length ? Math.round(totalDays / completedWithDates.length) : null;
+  const getTaskWeight = (task) => {
+    let weight = 0;
+    if (task.priority === 'Critical') weight += 5;
+    else if (task.priority === 'High') weight += 3;
+    else weight += 1; // Medium / Low
 
+    if (task.type === 'Баг') weight += 1; // Накидываем за баг
+    
+    return weight;
+  };
   // 2. Нагрузка / Выгорание (Work In Progress Limit)
-  const ALLOCATION_NORM = 4; // Идеально 3 задачи в параллели
-  const currentLoad = inProgress.length;
-  const loadPercent = Math.min(Math.round((currentLoad / ALLOCATION_NORM) * 100), 200);
+  const ALLOCATION_NORM = 9; // Идеально 3 задачи в параллели
+  const currentLoad = inProgress.reduce((sum, task) => sum + getTaskWeight(task), 0);
+  
+  const loadPercent = Math.min(Math.round((currentLoad / ALLOCATION_NORM) * 100), 200); // Ограничиваем шкалу 200%
   const isOverloaded = currentLoad > ALLOCATION_NORM;
 
   // 3. Распределение (Allocation: Баги vs Фичи)
@@ -110,18 +120,33 @@ export default function UserTasksView({ user, tasks, activeProject, onBack }) {
              <span className="text-4xl font-black text-white">{avgCycleTime !== null ? avgCycleTime : '-'}</span>
              <span className="text-slate-500 mb-1">дней</span>
            </div>
-           <p className="text-xs text-slate-500 mt-2">В среднем от старта до релиза</p>
+           <p className="text-xs text-slate-500 mt-2">В среднем от взятия в работу до выполнения</p>
         </div>
 
         {/* Capacity / Burnout (Gauge Bar) */}
-        <div className={`p-6 rounded-2xl border shadow-xl relative overflow-hidden transition-colors ${isOverloaded ? 'bg-red-950/20 border-red-900/50' : 'bg-slate-900/60 border-slate-800'}`}>
-           <h4 className={`text-sm font-bold uppercase tracking-wider mb-2 ${isOverloaded ? 'text-red-400' : 'text-slate-400'}`}>Нагрузка (В параллели: {currentLoad})</h4>
-           <div className="h-4 w-full bg-slate-800 rounded-full mt-4 overflow-hidden relative">
-              <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(loadPercent, 100)}%` }} className={`h-full ${isOverloaded ? 'bg-red-500' : 'bg-emerald-500'}`} />
+        <div className={`p-6 rounded-2xl border shadow-xl relative overflow-hidden transition-colors flex flex-col justify-between ${isOverloaded ? 'bg-rose-950/20 border-rose-900/50' : 'bg-slate-900/60 border-slate-800'}`}>
+           <div>
+             <h4 className={`text-sm font-bold uppercase tracking-wider mb-2 ${isOverloaded ? 'text-rose-400' : 'text-slate-400'}`}>Уровень нагрузки</h4>
+             
+             <div className="flex items-end gap-2 mb-1">
+               <span className={`text-4xl font-black ${isOverloaded ? 'text-rose-500' : 'text-white'}`}>{currentLoad}</span>
+               <span className="text-slate-500 mb-1">/ {ALLOCATION_NORM} баллов</span>
+             </div>
+
+             <div className="h-3 w-full bg-slate-800 rounded-full mt-4 overflow-hidden relative">
+                <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(loadPercent, 100)}%` }} className={`h-full ${isOverloaded ? 'bg-rose-500' : 'bg-emerald-500'}`} />
+             </div>
+             
+             <p className={`text-xs mt-3 font-bold ${isOverloaded ? 'text-rose-400' : 'text-emerald-400'}`}>
+               {isOverloaded ? `Перегруз (${loadPercent}%)` : `Запас: ${ALLOCATION_NORM - currentLoad} балл`}
+             </p>
            </div>
-           <p className={`text-xs mt-3 font-bold ${isOverloaded ? 'text-red-400' : 'text-slate-500'}`}>
-             {isOverloaded ? `ВНИМАНИЕ: Перегруз (${loadPercent}%)` : `Норма (до ${ALLOCATION_NORM} задач)`}
-           </p>
+           
+           {/* ЛЕГЕНДА С ВЕСАМИ ЗАДАЧ */}
+           <div className="text-[10px] text-slate-500 mt-4 pt-3 border-t border-slate-700/50 leading-relaxed">
+             <p><b>Оценка сложности:</b> Критическая = 5, Серьезная = 3, Обычная = 1</p>
+             <p className="italic">*Баги добавляют +1 балл к сложности</p>
+           </div>
         </div>
 
         {/* Allocation Bar */}
@@ -177,7 +202,7 @@ export default function UserTasksView({ user, tasks, activeProject, onBack }) {
         {selectedTask && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedTask(null)}>
             <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              onClick={(e) => e.stopPropagation()} className="bg-slate-900 border border-slate-700 rounded-3xl p-8 w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()} className="bg-slate-900 border border-slate-700 rounded-3xl p-8 w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar pr-6"
             >
               <div className="flex justify-between items-start mb-6 border-b border-slate-800 pb-6">
                 <div>
@@ -199,12 +224,12 @@ export default function UserTasksView({ user, tasks, activeProject, onBack }) {
                 </div>
                 <div className="col-span-1 space-y-6">
                   <div><h4 className="text-slate-500 text-xs font-bold uppercase mb-2">Статус</h4><span className="text-white bg-slate-800 px-4 py-2 rounded-lg border border-slate-700 block w-fit">{selectedTask.status}</span></div>
-                  <div><h4 className="text-slate-500 text-xs font-bold uppercase mb-2">Тип</h4><span className="text-white block">{selectedTask.type === 'Баг' ? '🐛 Баг' : '📝 Задача'}</span></div>
+                  <div><h4 className="text-slate-500 text-xs font-bold uppercase mb-2">Тип</h4><span className="text-white block">{selectedTask.type === 'Баг' ? 'Баг' : 'Задача'}</span></div>
                   <div>
                     <h4 className="text-slate-500 text-xs font-bold uppercase mb-2 flex items-center gap-2"><Calendar size={14}/> Даты</h4>
                     <div className="bg-slate-800 p-3 rounded-lg border border-slate-700">
-                       <p className="text-xs text-slate-400 mb-1">Старт: <span className="text-slate-200">{formatDate(selectedTask.start_date)}</span></p>
-                       <p className="text-xs text-slate-400">Финиш: <span className="text-slate-200">{formatDate(selectedTask.end_date)}</span></p>
+                       <p className="text-xs text-slate-400 mb-1">Взятие в работу: <span className="text-slate-200">{formatDate(selectedTask.start_date)}</span></p>
+                       <p className="text-xs text-slate-400">Выполнение: <span className="text-slate-200">{formatDate(selectedTask.end_date)}</span></p>
                     </div>
                   </div>
                 </div>

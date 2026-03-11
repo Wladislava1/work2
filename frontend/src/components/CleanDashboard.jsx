@@ -48,9 +48,13 @@ export default function CleanDashboard() {
               <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2.5 shrink-0" />
               <span><strong>Новая архитектура продукта:</strong> ССПБ ID разрабатывается на архитектуре, которая ранее не использовалась в наших продуктах, поэтому часть времени уходит на её настройку и адаптацию.</span>
             </li>
+            <li className="flex gap-3 items-start">
+              <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2.5 shrink-0" />
+              <span><strong>Использование React во фронтенде</strong> </span>
+            </li>
             <li className="flex gap-3 items-start bg-slate-900/50 p-4 rounded-xl border border-slate-800">
               <Activity className="text-amber-500 shrink-0 mt-0.5" size={20} />
-              <span><strong>Нехватка разработчиков:</strong> Огромный объем работы тянут на себе всего два человека. Команда работает на пределе возможностей (на проекте только Трофим и Саша Светиков).</span>
+              <span><strong>Использование Cursor:</strong> Любой сгенерированный код требует проверки и понимания со стороны разработчика. Чтобы корректно применить его в работе, необходимо понимать архитектуру проекта и чётко представлять, какой результат должен быть на выходе.</span>
             </li>
           </ul>
         </motion.div>
@@ -83,10 +87,6 @@ export default function CleanDashboard() {
             <li className="flex gap-3 items-start">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2.5 shrink-0" />
              <span><strong>Интеграция с SSPB ID:</strong> Необходимо завершить интеграцию SSPB ID и СБ Арбитр. Для этого требуется вывести новую роль пользователя и реализовать логику работы системы с учетом этой роли, включая корректное распределение прав доступа и взаимодействие с существующими разделами.</span>
-            </li>
-            <li className="flex gap-3 items-start bg-slate-900/50 p-4 rounded-xl border border-slate-800">
-              <Activity className="text-amber-500 shrink-0 mt-0.5" size={20} />
-              <span><strong>Использование Cursor:</strong> Любой сгенерированный код требует проверки и понимания со стороны разработчика. Чтобы корректно применить его в работе, необходимо понимать архитектуру проекта и чётко представлять, какой результат должен быть на выходе.</span>
             </li>
           </ul>
         </motion.div>

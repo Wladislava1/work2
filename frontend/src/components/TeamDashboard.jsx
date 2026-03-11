@@ -133,7 +133,7 @@ export default function TeamDashboard({ tasks }) {
           </div>
 
           {/* БЛОК 1: ОСНОВНАЯ КОМАНДА */}
-          <h3 className="text-lg font-bold text-white mb-6 border-b border-slate-800 pb-3">Основная команда (Ядро)</h3>
+          <h3 className="text-lg font-bold text-white mb-6 border-b border-slate-800 pb-3">Основная команда</h3>
           <div className="grid grid-cols-4 gap-6 mb-10">
             {coreTeam.map((user, index) => {
               const userActiveTasks = projectTasks.filter(t => t.assignee_id === user.id && ['inProgress', 'completed'].includes(normalizeStatus(t.status)));
