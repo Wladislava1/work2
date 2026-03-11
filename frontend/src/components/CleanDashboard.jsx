@@ -38,11 +38,15 @@ export default function CleanDashboard() {
           <ul className="space-y-4 text-slate-300 text-base">
             <li className="flex gap-3 items-start">
               <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2.5 shrink-0" />
-              <span><strong>Запуск продаж и интеграции:</strong> Продажи начинаются со дня на день. Сейчас критически важно протестировать стабильность работы, завершить интеграцию всех продуктов и полностью переделать дизайн сервиса.</span>
+              <span><strong>Запуск продаж и интеграции:</strong> Сейчас необходимо убедиться в стабильности работы сервиса, завершить интеграцию всех продуктов внутри системы и обновить дизайн. </span>
             </li>
             <li className="flex gap-3 items-start">
               <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2.5 shrink-0" />
-              <span><strong>Проблема с архитектурой:</strong> Выбранная изначально система авторизации (Zitadel) работает нестабильно и постоянно генерирует много багов, которые приходится срочно чинить.</span>
+              <span><strong>Система авторизации Zitadel:</strong> В текущей реализации иногда возникают проблемы с пользовательскими сессиями, из-за чего требуется дополнительная доработка логики работы авторизации. </span>
+            </li>
+            <li className="flex gap-3 items-start">
+              <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2.5 shrink-0" />
+              <span><strong>Новая архитектура продукта:</strong> ССПБ ID разрабатывается на архитектуре, которая ранее не использовалась в наших продуктах, поэтому часть времени уходит на её настройку и адаптацию.</span>
             </li>
             <li className="flex gap-3 items-start bg-slate-900/50 p-4 rounded-xl border border-slate-800">
               <Activity className="text-amber-500 shrink-0 mt-0.5" size={20} />
@@ -61,7 +65,7 @@ export default function CleanDashboard() {
               <Network size={28} />
             </div>
             <div>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Фокус разработки</p>
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Главный приоритет</p>
               <h2 className="text-2xl font-bold text-white">СБ Арбитр</h2>
             </div>
           </div>
@@ -75,6 +79,14 @@ export default function CleanDashboard() {
             <li className="flex gap-3 items-start">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2.5 shrink-0" />
               <span><strong>Раздел заявок:</strong> С нуля создается интерфейс для работы с заявками на счета. Разрабатываются статусы заявок, переходы между ними и логика обработки ошибок.</span>
+            </li>
+            <li className="flex gap-3 items-start">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2.5 shrink-0" />
+             <span><strong>Интеграция с SSPB ID:</strong> Необходимо завершить интеграцию SSPB ID и СБ Арбитр. Для этого требуется вывести новую роль пользователя и реализовать логику работы системы с учетом этой роли, включая корректное распределение прав доступа и взаимодействие с существующими разделами.</span>
+            </li>
+            <li className="flex gap-3 items-start bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+              <Activity className="text-amber-500 shrink-0 mt-0.5" size={20} />
+              <span><strong>Использование Cursor:</strong> Любой сгенерированный код требует проверки и понимания со стороны разработчика. Чтобы корректно применить его в работе, необходимо понимать архитектуру проекта и чётко представлять, какой результат должен быть на выходе.</span>
             </li>
           </ul>
         </motion.div>

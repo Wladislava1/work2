@@ -30,9 +30,9 @@ export default function UserTasksView({ user, tasks, activeProject, onBack }) {
   const avgCycleTime = completedWithDates.length ? Math.round(totalDays / completedWithDates.length) : null;
 
   // 2. Нагрузка / Выгорание (Work In Progress Limit)
-  const ALLOCATION_NORM = 3; // Идеально 3 задачи в параллели
+  const ALLOCATION_NORM = 4; // Идеально 3 задачи в параллели
   const currentLoad = inProgress.length;
-  const loadPercent = Math.min(Math.round((currentLoad / ALLOCATION_NORM) * 100), 200); // Ограничиваем шкалу до 200%
+  const loadPercent = Math.min(Math.round((currentLoad / ALLOCATION_NORM) * 100), 200);
   const isOverloaded = currentLoad > ALLOCATION_NORM;
 
   // 3. Распределение (Allocation: Баги vs Фичи)

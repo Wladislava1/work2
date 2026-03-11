@@ -8,13 +8,18 @@ import UserTasksView from './UserTasksView';
 const PROJECTS = ['Все', 'ССПБ ID', 'СБ Арбитр', 'АУ Публикатор', 'Про Решения', 'Сириус', 'ССПБ'];
 
 // ОБНОВЛЕННЫЙ СПИСОК КОМАНДЫ
-const mockTeam = [
+const coreTeam = [
   { id: 1, name: "Трофим", role: "Frontend", color: "text-indigo-400", bg: "bg-indigo-900/20", border: "border-indigo-500/50" },
   { id: 2, name: "Саша Светиков", role: "Backend", color: "text-emerald-400", bg: "bg-emerald-900/20", border: "border-emerald-500/50" },
   { id: 3, name: "Федор", role: "Backend", color: "text-emerald-400", bg: "bg-emerald-900/20", border: "border-emerald-500/50" },
-  { id: 4, name: "Паша", role: "Frontend", color: "text-indigo-400", bg: "bg-indigo-900/20", border: "border-indigo-500/50" },
+  { id: 4, name: "Паша", role: "Frontend", color: "text-indigo-400", bg: "bg-indigo-900/20", border: "border-indigo-500/50" }
+];
+
+// 2. ПРИВЛЕЧЕННЫЕ СПЕЦИАЛИСТЫ
+const externalTeam = [
   { id: 5, name: "Дима Панов", role: "Fullstack", color: "text-blue-400", bg: "bg-blue-900/20", border: "border-blue-500/50" },
-  { id: 6, name: "Люба", role: "Frontend", color: "text-purple-400", bg: "bg-purple-900/20", border: "border-purple-500/50" }
+  { id: 6, name: "Люба", role: "Frontend", color: "text-purple-400", bg: "bg-purple-900/20", border: "border-purple-500/50" },
+  { id: 7, name: "Ron", role: "Fullstack", color: "text-orange-400", bg: "bg-orange-900/20", border: "border-orange-500/50" }
 ];
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -74,7 +79,6 @@ export default function TeamDashboard({ tasks }) {
     { name: 'Выполнено', value: completedTasks.length, color: '#10b981' }, // Изумрудный
     { name: 'В работе', value: inProgressTasks.length, color: '#f59e0b' },      // Янтарный
     { name: 'Открыто', value: openTasks.length, color: '#6366f1' },            // Индиго
-    { name: 'Будущие', value: futureTasks.length, color: '#8b5cf6' }         // Фиолетовый
   ].filter(d => d.value > 0); // Скрываем куски с нулями
 
   if (selectedUser) {
@@ -115,22 +119,57 @@ export default function TeamDashboard({ tasks }) {
           
           <div className="grid grid-cols-3 gap-6 mb-12">
              <div className="bg-slate-800/40 p-6 rounded-2xl border border-slate-700/50">
-               <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Объем (Открыто+Будущие)</p>
+               <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Объем (Открыто)</p>
                <p className="text-4xl font-bold text-white">{totalBacklog} <span className="text-lg text-slate-500 font-normal">задач</span></p>
              </div>
              <div className="bg-slate-800/40 p-6 rounded-2xl border border-slate-700/50">
                <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Командный состав</p>
-               <p className="text-4xl font-bold text-white">{mockTeam.length} <span className="text-lg text-slate-500 font-normal">чел.</span></p>
+               <p className="text-4xl font-bold text-white">{coreTeam.length} <span className="text-lg text-slate-500 font-normal">чел.</span></p>
              </div>
              <div className="bg-slate-800/40 p-6 rounded-2xl border border-slate-700/50">
-               <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Нагрузка на разработчика</p>
-               <p className="text-4xl font-bold text-amber-400">{Math.round(totalBacklog / mockTeam.length) || 0} <span className="text-lg text-slate-500 font-normal">задач/чел.</span></p>
+               <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Очередь задач на разработчика</p>
+               <p className="text-4xl font-bold text-amber-400">{Math.round(totalBacklog / coreTeam.length) || 0} <span className="text-lg text-slate-500 font-normal">открытых задач/чел.</span></p>
              </div>
           </div>
 
-          <h3 className="text-lg font-bold text-white mb-6 border-b border-slate-800 pb-3">Распределение по разработчикам</h3>
+          {/* БЛОК 1: ОСНОВНАЯ КОМАНДА */}
+          <h3 className="text-lg font-bold text-white mb-6 border-b border-slate-800 pb-3">Основная команда (Ядро)</h3>
+          <div className="grid grid-cols-4 gap-6 mb-10">
+            {coreTeam.map((user, index) => {
+              const userActiveTasks = projectTasks.filter(t => t.assignee_id === user.id && ['inProgress', 'completed'].includes(normalizeStatus(t.status)));
+              const completedCount = userActiveTasks.filter(t => normalizeStatus(t.status) === 'completed').length;
+
+              return (
+                <motion.div key={user.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}
+                  onClick={() => setSelectedUser(user)} whileHover={{ translateY: -4 }} 
+                  className={`p-6 rounded-2xl cursor-pointer transition-all border ${user.bg} ${user.border}`}
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h4 className="text-lg font-bold text-white mb-0.5">{user.name}</h4>
+                      <p className={`text-xs font-semibold uppercase tracking-wider ${user.color}`}>{user.role}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center bg-slate-900/50 p-3 rounded-xl border border-slate-800/50">
+                    <div className="text-center w-1/2 border-r border-slate-700/50">
+                      <p className="text-[10px] text-slate-400 uppercase">Выполнено</p>
+                      <p className="text-xl font-bold text-emerald-400">{completedCount}</p>
+                    </div>
+                    <div className="text-center w-1/2">
+                      <p className="text-[10px] text-slate-400 uppercase">В работе</p>
+                      <p className="text-xl font-bold text-white">{userActiveTasks.length - completedCount}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* БЛОК 2: ПРИВЛЕЧЕННЫЕ СПЕЦИАЛИСТЫ */}
+          <h3 className="text-lg font-bold text-white mb-6 border-b border-slate-800 pb-3">Привлеченные специалисты</h3>
           <div className="grid grid-cols-3 gap-6">
-            {mockTeam.map((user, index) => {
+            {externalTeam.map((user, index) => {
               const userActiveTasks = projectTasks.filter(t => t.assignee_id === user.id && ['inProgress', 'completed'].includes(normalizeStatus(t.status)));
               const completedCount = userActiveTasks.filter(t => normalizeStatus(t.status) === 'completed').length;
 
@@ -170,7 +209,7 @@ export default function TeamDashboard({ tasks }) {
           <div className="bg-slate-800/40 p-8 rounded-3xl border border-slate-700 mb-8 flex items-center justify-between">
              <div className="w-1/2">
                {/* ОБНОВЛЕННЫЕ ЗАГОЛОВКИ */}
-               <h3 className="text-xl font-bold text-white mb-2">Состав бэклога: Выполнено / Открыто / Будущие / В работе</h3>
+               <h3 className="text-xl font-bold text-white mb-2">Состав бэклога: Выполнено / Открыто / В работе</h3>
                <p className="text-slate-400 text-sm mb-6 leading-relaxed">Распределение всех задач выбранного проекта ({activeProject}) по текущим фазам готовности.</p>
                
                {donutData.length > 0 ? (
@@ -233,14 +272,6 @@ export default function TeamDashboard({ tasks }) {
                     </div>
                   </div>
 
-                  {/* Будущие */}
-                  <div className="bg-slate-900/30 p-5 rounded-2xl border border-slate-800 flex flex-col">
-                    <h3 className="text-sm font-bold text-purple-400 uppercase tracking-wider mb-4 flex items-center gap-2 shrink-0 border-b border-slate-800 pb-3"><PauseCircle size={16} /> Будущие ({futureTasks.length})</h3>
-                    <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                      {futureTasks.map((task, i) => <TaskCard key={task.id} task={task} showProject={activeProject === 'Все'} delay={i * 0.05} onClick={() => setSelectedTask(task)} />)}
-                      {futureTasks.length === 0 && <p className="text-slate-600 text-xs text-center py-6">Нет данных</p>}
-                    </div>
-                  </div>
 
                   {/* Выполнено */}
                   <div className="bg-slate-900/30 p-5 rounded-2xl border border-slate-800 flex flex-col">
