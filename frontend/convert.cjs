@@ -2,7 +2,7 @@ const fs = require('fs');
 const XLSX = require('xlsx');
 
 // Укажи правильное название файла (если это CSV, XLSX всё равно его прочитает)
-const workbook = XLSX.readFile('./СириусRon.xlsx');
+const workbook = XLSX.readFile('./трофим!.xlsx');
 const sheetName = workbook.SheetNames[0]; 
 const worksheet = workbook.Sheets[sheetName];
 
@@ -12,7 +12,7 @@ const data = XLSX.utils.sheet_to_json(worksheet);
 // НОВЫЙ СОСТАВ КОМАНДЫ
 const teamMapping = { 'Трофим': 1, 'Саша Светиков': 2, 'Федор': 3, 'Паша': 4, 'Дима Панов': 5, 'Люба': 6, 'Ron': 7 };
 
-let taskId = 196;
+let taskId = 200;
 const tasks = [];
 
 // Функция для безопасного поиска колонок (учитывает опечатки и регистр)
@@ -99,7 +99,7 @@ data.forEach(row => {
             title: String(title).trim(),
             description: String(description).trim(),
             assignee_id: aid,
-            project: 'Сириус', // Заменил проект
+            project: 'Апогей', // Заменил проект
             status: status, 
             type: type, 
             priority: priority, 
@@ -110,5 +110,5 @@ data.forEach(row => {
 });
 
 const output = `export const tasks2 = ${JSON.stringify(tasks, null, 2)};`;
-fs.writeFileSync('./src/data7.js', output, 'utf8');
-console.log('🚀 Файл data7.js успешно сгенерирован! В нем ' + tasks.length + ' задач.');
+fs.writeFileSync('./src/data9.js', output, 'utf8');
+console.log('🚀 Файл data9.js успешно сгенерирован! В нем ' + tasks.length + ' задач.');

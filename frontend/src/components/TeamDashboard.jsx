@@ -5,7 +5,7 @@ import { AlignLeft, AlertOctagon, X, Calendar, Activity, ListTodo, ChevronDown, 
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import UserTasksView from './UserTasksView';
 
-const PROJECTS = ['Все', 'ССПБ ID', 'СБ Арбитр', 'АУ Публикатор', 'Про Решения', 'Сириус', 'ССПБ'];
+const PROJECTS = ['Все', 'ССПБ ID', 'СБ Арбитр', 'АУ Публикатор', 'Про Решения', 'Сириус', 'ССПБ', 'Апогей'];
 
 // ОБНОВЛЕННЫЙ СПИСОК КОМАНДЫ
 const coreTeam = [

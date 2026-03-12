@@ -6,7 +6,7 @@ import { ArrowLeft, CheckCircle, Clock, Plus, X, AlignLeft, Calendar } from 'luc
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Brush } from 'recharts';
 import { normalizeStatus, TaskCard } from './TeamDashboard';
 
-const PROJECTS = ['ССПБ ID', 'СБ Арбитр', 'АУ Публикатор', 'Про Решения', 'Сириус', 'ССПБ'];
+const PROJECTS = ['ССПБ ID', 'СБ Арбитр', 'АУ Публикатор', 'Про Решения', 'Сириус', 'ССПБ', 'Апогей'];
 
 export default function UserTasksView({ user, tasks, activeProject, onBack }) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);

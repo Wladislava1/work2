@@ -3,15 +3,6 @@ import { motion } from 'framer-motion';
 import { AlertOctagon, Bug, FileText, ServerCrash } from 'lucide-react';
 
 // eslint-disable-next-line no-unused-vars
-const realTasks = [
-  { id: 1, title: "Разворачивание Zitadel (Конфликт: мб Casebook?)", role: "Dev", type: "critical" },
-  { id: 2, title: "SSPB ID. Доработки формы регистрации (бэк+фронт)", role: "Dev", type: "feature" },
-  { id: 3, title: "Верификация ССПБ ID по почте", role: "QA", type: "testing" },
-  { id: 4, title: "Интеграция: СБ Арбитр (Блокер: ожидание Ди)", role: "BA", type: "blocked" },
-  { id: 5, title: "АУ Публикатор: Регистрация по ролям", role: "Dev", type: "feature" },
-  { id: 6, title: "АИР: Подготовка базы для интеграции", role: "BA", type: "analysis" },
-];
-
 export default function RealityDashboard() {
   return (
     <div className="space-y-8">
